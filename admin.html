@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .tab-content {
+            margin-top: 20px;
+        }
+
+        .btn-container {
+            margin-top: 20px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .booking-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .food-item {
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="movies.html">Movie Booking</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="movies.html">Movies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="admin.html">Admin</a>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-danger" onclick="logout()">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Admin Panel</h2>
+
+        <!-- Admin Navigation Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#screenManagement">Screen Management</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#bookingManagement">Booking Management</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#foodMenuManagement">Food Menu Management</a>
+            </li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="tab-content">
+            <!-- Screen Management Tab -->
+            <div id="screenManagement" class="tab-pane active">
+                <h3>Screen Management</h3>
+                <form id="screenForm">
+                    <div class="form-group">
+                        <label for="screenName">Screen Name:</label>
+                        <input type="text" class="form-control" id="screenName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="seatLimit">Seat Limit:</label>
+                        <input type="number" class="form-control" id="seatLimit" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Screen</button>
+                </form>
+            </div>
+
+            <!-- Booking Management Tab -->
+            <div id="bookingManagement" class="tab-pane">
+                <h3>Booking Management</h3>
+                <div id="bookingList">
+                    <!-- Bookings will be listed here -->
+                </div>
+            </div>
+
+            <!-- Food Menu Management Tab -->
+            <div id="foodMenuManagement" class="tab-pane">
+                <h3>Food Menu Management</h3>
+                <form id="foodForm">
+                    <div class="form-group">
+                        <label for="foodItem">Food Item:</label>
+                        <input type="text" class="form-control" id="foodItem" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="foodPrice">Price:</label>
+                        <input type="number" class="form-control" id="foodPrice" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Food Item</button>
+                </form>
+                <div id="foodMenu">
+                    <!-- Food menu will be listed here -->
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Screen Management
+        let screens = JSON.parse(localStorage.getItem('screens')) || [];
+        document.getElementById('screenForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            let screen = {
+                screenId: 'screen' + (screens.length + 1),
+                name: document.getElementById('screenName').value,
+                seatLimit: document.getElementById('seatLimit').value
+            };
+            screens.push(screen);
+            localStorage.setItem('screens', JSON.stringify(screens));
+            alert('Screen added successfully!');
+        });
+
+        // Booking Management
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        let bookingList = document.getElementById('bookingList');
+        bookings.forEach(booking => {
+            let bookingItem = document.createElement('div');
+            bookingItem.classList.add('booking-item');
+            bookingItem.innerHTML = `<p>Booking for ${booking.movie} on ${booking.screen} - Seats: ${booking.seats.join(', ')}</p>`;
+            bookingList.appendChild(bookingItem);
+        });
+
+        // Food Menu Management
+        let foodMenu = JSON.parse(localStorage.getItem('foodMenu')) || [];
+        document.getElementById('foodForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            let foodItem = {
+                name: document.getElementById('foodItem').value,
+                price: document.getElementById('foodPrice').value
+            };
+            foodMenu.push(foodItem);
+            localStorage.setItem('foodMenu', JSON.stringify(foodMenu));
+            alert('Food item added successfully!');
+            displayFoodMenu();
+        });
+
+        function displayFoodMenu() {
+            let foodMenuList = document.getElementById('foodMenu');
+            foodMenuList.innerHTML = '';
+            foodMenu.forEach(item => {
+                let foodItem = document.createElement('div');
+                foodItem.classList.add('food-item');
+                foodItem.innerHTML = `<p>${item.name} - $${item.price}</p>`;
+                foodMenuList.appendChild(foodItem);
+            });
+        }
+
+        displayFoodMenu();
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html'; // Redirect to login page
+        }
+
+        // Activate the first tab by default
+        $('#screenManagement').addClass('active');
+        $('.nav-link').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html'; // Redirect to login page if not logged in
+            }
+        });
+    </script>
+</body>
+
+</html>

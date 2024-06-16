@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Booking</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .card {
+            margin: 10px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-text {
+            margin-bottom: 10px;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .card-img-top {
+            max-height: 200px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Include Navbar -->
+    <!-- navbar.html -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="movies.html">Movie Booking</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="movies.html">Movies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="admin.html">Admin</a>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-danger" onclick="logout()">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Available Movies</h2>
+                <div id="moviesList" class="row">
+                    <!-- Available Movies will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        let movies = [
+            { title: "Movie 1", genre: "Action", showtimes: ["10:00 AM", "1:00 PM", "4:00 PM"], image: "images/2.jpg" },
+            { title: "Movie 2", genre: "Comedy", showtimes: ["11:00 AM", "2:00 PM", "5:00 PM"], image: "images/2.jpg" },
+            { title: "Movie 3", genre: "Drama", showtimes: ["12:00 PM", "3:00 PM", "6:00 PM"], image: "images/2.jpg" }
+        ];
+
+        let moviesList = document.getElementById('moviesList');
+        let upcomingMoviesList = document.getElementById('upcomingMoviesList');
+
+        movies.forEach(movie => {
+            let movieCard = `
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="${movie.image}" class="card-img-top" alt="${movie.title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${movie.title}</h5>
+                            <p class="card-text"><strong>Genre:</strong> ${movie.genre}</p>
+                            <p class="card-text"><strong>Showtimes:</strong> ${movie.showtimes.join(", ")}</p>
+                            <button class="btn btn-primary" onclick="selectSeats('${movie.title}')">Select Seats</button>
+                        </div>
+                    </div>
+                </div>`;
+            moviesList.innerHTML += movieCard;
+        });
+
+
+
+        function selectSeats(movieTitle) {
+            localStorage.setItem('selectedMovie', movieTitle);
+            window.location.href = 'screens.html'; // Redirect to screen selection page
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html'; // Redirect to login page
+        }
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html'; // Redirect to login page if not logged in
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Seats</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .screen-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            /* Adjust height as needed */
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            color: #fff;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .seats-container {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .seat {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            background-color: lightgray;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .selected {
+            background-color: green;
+        }
+
+        .locked {
+            background-color: red;
+            cursor: pointer;
+        }
+
+        .seat-label {
+            position: absolute;
+            top: -20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #333;
+        }
+
+        .seat-label.col {
+            top: 50%;
+            left: -20px;
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
+
+        .btn-container {
+            margin-top: 20px;
+        }
+
+        .btn-primary,
+        .btn-danger {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- navbar.html -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="movies.html">Movie Booking</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="movies.html">Movies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="admin.html">Admin</a>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-danger" onclick="logout()">Logout</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>Select Seats for <span id="screenTitle"></span></h2>
+
+        <!-- Screen display -->
+        <div class="screen-container">
+            <div class="screen">
+                Front Screen
+            </div>
+        </div>
+
+        <!-- Seats display -->
+        <div class="seats-container" id="seatsMap">
+            <!-- Seats will be generated here -->
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-container">
+            <button class="btn btn-primary" id="confirmBooking">Confirm Booking</button>
+        </div>
+        <!-- Modal for payment confirmation -->
+        <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="paymentModalLabel">Payment Confirmation</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="paymentDetails"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedScreen = JSON.parse(localStorage.getItem('selectedScreen'));
+        document.getElementById('screenTitle').innerText = selectedScreen.screenName;
+
+        let seatsMap = document.getElementById('seatsMap');
+        let lockedSeats = JSON.parse(localStorage.getItem('lockedSeats')) || {};
+        let bookedSeats = JSON.parse(localStorage.getItem('bookedSeats')) || {};
+        let seatLockDuration = 30000; // 30 seconds lock duration
+
+        function renderSeats() {
+            seatsMap.innerHTML = '';
+            let rowCount = 5; // Number of rows
+            let colCount = 12; // Number of seats per row
+
+            for (let row = 1; row <= rowCount; row++) {
+                let rowDiv = document.createElement('div');
+                rowDiv.className = 'd-flex justify-content-center mb-2';
+
+                for (let col = 1; col <= colCount; col++) {
+                    let seatId = selectedScreen.screenId + '_seat_' + row + '_' + col;
+                    let seat = document.createElement('div');
+                    seat.className = 'seat';
+                    seat.id = seatId;
+
+                    // Set seat label (row and column)
+                    let seatLabel = document.createElement('div');
+                    seatLabel.className = 'seat-label';
+                    seatLabel.innerText = `${row}-${col}`;
+                    seat.appendChild(seatLabel);
+
+                    // Check seat status and apply classes
+                    if (bookedSeats[seatId]) {
+                        seat.classList.add('locked');
+                        seat.onclick = null;
+                    } else if (lockedSeats[seatId] && Date.now() - lockedSeats[seatId] < seatLockDuration) {
+                        seat.classList.add('locked');
+                        seat.onclick = alert('This seat is already booked.');
+                    } else {
+                        seat.onclick = function () {
+                            seat.classList.toggle('selected');
+                        };
+                    }
+
+                    rowDiv.appendChild(seat);
+                }
+
+                seatsMap.appendChild(rowDiv);
+            }
+        }
+
+        renderSeats();
+
+        document.getElementById('confirmBooking').onclick = function () {
+            let selectedSeats = [];
+            document.querySelectorAll('.seat.selected').forEach(seat => {
+                selectedSeats.push(seat.id);
+            });
+            if (selectedSeats.length > 0) {
+                let totalSeats = selectedSeats.length;
+                let ticketPrice = 10; // Example ticket price
+                let totalPrice = totalSeats * ticketPrice;
+                let bookingDetails = {
+                    movie: localStorage.getItem('selectedMovie'),
+                    screen: selectedScreen.screenName,
+                    seats: selectedSeats,
+                    totalPrice: totalPrice
+
+                };
+                // Save the booking
+                let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+                bookings.push(bookingDetails);
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+
+                // Notify the user
+                let userEmail = JSON.parse(localStorage.getItem('currentUser')).email;
+                sendBookingConfirmation(userEmail, bookingDetails);
+
+                // Lock seats
+                selectedSeats.forEach(seatId => {
+                    lockedSeats[seatId] = Date.now();
+                });
+                localStorage.setItem('lockedSeats', JSON.stringify(lockedSeats));
+
+                // Alert and render seats
+                alert('Booking Confirmed! Complete the payment within 30 seconds.');
+                setTimeout(() => {
+                    selectedSeats.forEach(seatId => {
+                        delete lockedSeats[seatId];
+                    });
+                    localStorage.setItem('lockedSeats', JSON.stringify(lockedSeats));
+                    renderSeats();
+                }, seatLockDuration);
+            } else {
+                alert('Please select at least one seat.');
+            }
+        };
+
+        function sendBookingConfirmation(email, bookingDetails) {
+            alert(`Booking Confirmation: An email has been sent to ${email} with your booking details.\n\nMovie: ${bookingDetails.movie}\nScreen: ${bookingDetails.screen}\nSeats: ${bookingDetails.seats.join(', ')}\nTotal Price: $${bookingDetails.totalPrice}`);
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html'; // Redirect to login page
+        }
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function () {
+            let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'index.html'; // Redirect to login page if not logged in
+            }
+        });
+    </script>
+</body>
+
+</html>
